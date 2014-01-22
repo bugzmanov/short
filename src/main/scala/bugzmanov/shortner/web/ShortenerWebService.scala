@@ -10,7 +10,7 @@ import akka.actor.Props
 import spray.util.actorSystem
 import spray.routing._
 import spray.http._
-import spray.http.StatusCodes.{NotFound, BadRequest, InternalServerError, MovedPermanently}
+import spray.http.StatusCodes.{NotFound, BadRequest, InternalServerError, Found}
 import bugzmanov.shortner.service.ShortenerService
 
 
@@ -29,7 +29,7 @@ trait ShortenerWebService extends HttpService {
 
   def expand(key: String): RequestContext => Unit = { implicit ctx =>
     shortener.expand(key) onComplete {
-      case Success(Some(url)) => ctx.redirect(Uri(url.toString), MovedPermanently)
+      case Success(Some(url)) => ctx.redirect(Uri(url.toString), Found)
       case Success(None) => ctx.complete(NotFound)
       case Failure(e) => ctx.complete(InternalServerError)
     }
