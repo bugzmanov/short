@@ -17,7 +17,7 @@ class WebServiceSpec extends Specification with Specs2RouteTest with ShortenerWe
 
   def actorRefFactory = system
 
-  val domain: String = "http://localhost:9000/"
+  val domainAddress: String = "http://localhost:9000/"
 
   def shortener = {
     new ShortenerService {
@@ -28,7 +28,7 @@ class WebServiceSpec extends Specification with Specs2RouteTest with ShortenerWe
           Future(Some(new URL("http://www.google.com/" + key)))
       }
 
-      def shorten(url: URL): Future[String] = Future(domain + url.toString.hashCode().toString)
+      def shorten(url: URL): Future[String] = Future(url.toString.hashCode().toString)
     }
   }
 
@@ -53,7 +53,7 @@ class WebServiceSpec extends Specification with Specs2RouteTest with ShortenerWe
     "return shortened url for POST with url field if url is valid" in {
       val url = "http://google.com"
       Post("/", fillForm(url)) ~> router ~> check {
-        entityAs[String] must contain(domain + url.hashCode())
+        entityAs[String] must contain(url.hashCode().toString)
       }
     }
 

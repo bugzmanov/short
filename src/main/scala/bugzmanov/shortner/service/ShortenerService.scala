@@ -13,16 +13,14 @@ trait ShortenerService {
   def shorten(url: URL): Future[String]
 }
 
-class ShortenerServiceImpl(serviceActor: ActorRef, serviceDomain: String)
+class ShortenerServiceImpl(serviceActor: ActorRef)
                           (implicit system: ActorSystem, timeout: Timeout) extends ShortenerService {
   
   private implicit def executionContext = system.dispatcher
   
-  private def makeUrl(key: String) = serviceDomain + "/" + key
-  
   def expand(key: String): Future[Option[URL]] = (serviceActor ? Expand(key)).mapTo[ExpandResult].map { _.url.map(new URL(_)) }
 
-  def shorten(url: URL): Future[String] = (serviceActor ? Shorten(url.toString)).mapTo[ShortenResult].map { r => makeUrl(r.key) }
+  def shorten(url: URL): Future[String] = (serviceActor ? Shorten(url.toString)).mapTo[ShortenResult].map { _.key }
 }
 
 case class Shorten(url: String)

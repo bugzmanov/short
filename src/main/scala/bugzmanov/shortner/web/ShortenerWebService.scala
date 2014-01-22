@@ -20,6 +20,8 @@ trait ShortenerWebService extends HttpService {
 
   def shortener: ShortenerService
 
+  def domainAddress: String
+
   private def validate(url:String): Either[String, URL]= Try(new URL(url)) match {
     case Success(url0) =>
       if (url0.getProtocol == "http") Right(url0) else Left("Only http protocol is supported")
@@ -39,7 +41,7 @@ trait ShortenerWebService extends HttpService {
     validate(url) match {
       case Right(url0) =>
         shortener.shorten(url0) onComplete {
-          case Success(key) => Html.shortenResult(key, url0.toString)
+          case Success(key) => Html.shortenResult(domainAddress + "/" + key, url0.toString)
           case Failure(e) => ctx.complete(InternalServerError, "Ooops")
         }
       case Left(error) => ctx.complete(BadRequest, error)
@@ -63,14 +65,14 @@ trait ShortenerWebService extends HttpService {
   }
 }
 
-final class ShortenerWebActor(val shortener: ShortenerService)
+final class ShortenerWebActor(val shortener: ShortenerService, val domainAddress: String)
   extends HttpServiceActor with ShortenerWebService {
   def receive = runRoute(router)
 }
 
 object ShortenerWebActor {
-  def props(shortener: ShortenerService) =
-    Props(classOf[ShortenerWebActor], shortener)
+  def props(shortener: ShortenerService, domainAddress: String) =
+    Props(classOf[ShortenerWebActor], shortener, domainAddress)
 }
 
 //todo: damn, this is ugly

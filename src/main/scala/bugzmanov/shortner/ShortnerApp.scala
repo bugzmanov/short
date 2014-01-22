@@ -26,9 +26,9 @@ object ShortnerApp extends App {
 
     val keyRepoActor = system.actorOf(ShortenerServiceActor.props(keyRepository))
 
-    val shortener: ShortenerServiceImpl = new ShortenerServiceImpl(keyRepoActor, "http://localhost:" + port)
+    val shortener: ShortenerServiceImpl = new ShortenerServiceImpl(keyRepoActor)
 
-    system.actorOf(ShortenerWebActor.props(shortener), "web-actor")
+    system.actorOf(ShortenerWebActor.props(shortener, "http://localhost:" + port), "web-actor")
   }
 
   IO(Http) ! Http.Bind(service, interface = "localhost", port = port)
